@@ -19,21 +19,27 @@ app.get('/',function(req,res){
 })
 
 
+  app.use(require('cookie-parser')());
+  app.use(require('express-session')({secret:'keyboard cat',resave:false,saveUninitialized:false}));
+  app.use(passport.initialize());
+  app.use(passport.session());
+
 
 passport.use(new LocalStrategy(
   function(username, password, cb) {
-    console.log("new local strategy");
-/*    db.users.findByUsername(username, function(err, user) {
-      if (err) { return cb(err); }
-      if (!user) { return cb(null, false); }
-      if (user.password != password) { return cb(null, false); }
-      return cb(null, user);
-    });*/
-  }));
+    console.log(username+"<<username   password>>>>"+password);
+    if(username=="amit" && password=="amit"){
+      console.log('sucess login')
+      return cb(null,{username:"amit",id:"007"})
+    }else{
+      console.log('fail login')
+      return cb(null, false, { message: 'Incorrect username.' });
+    }
+}));
 
 passport.serializeUser(function(user, cb) {
   console.log("serializeUser new local strategy");
-  //cb(null, user.id);
+  cb(null, 007);
 });
 
 
@@ -43,15 +49,28 @@ passport.deserializeUser(function(id, cb) {
     if (err) { return cb(err); }
     cb(null, user);
   });*/
+    cb(null,{username:"amit",id:"007"});
 });
 
 app.post('/login', 
-  passport.authenticate('local', { failureRedirect: '/login' }),
+  passport.authenticate('local', { failureRedirect: '/' }),
   function(req, res) {
     console.log("C")
-    res.redirect('/');
-  });
-  
+    res.redirect('/profile');
+ });
+
+
+app.get('/profile',function(req,res){
+  //console.log(req.user,"profile page here")
+  var msg="Hello "+req.user.username
+  res.send(msg);
+})
+
+app.get('/otherpage',function(req,res){
+  var msg="Welcome Mr. "+req.user.username
+  res.send(msg);
+})
+
 
 app.listen(2000,function(){
 	console.log("app running on 2000")
